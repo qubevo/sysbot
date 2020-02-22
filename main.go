@@ -24,7 +24,7 @@ func main() {
 	go rtm.ManageConnection()
 
 	time.Sleep(3 * time.Second)
-	rtm.SendMessage(rtm.NewOutgoingMessage("salut ce faci ?", store.GetChannelID()))
+	rtm.SendMessage(rtm.NewOutgoingMessage("I am online !", store.GetChannelID()))
 
 	for msg := range rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
