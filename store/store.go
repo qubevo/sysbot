@@ -36,3 +36,13 @@ func GetWatchFiles() []string {
 func GetIntlStrings(k string) string {
 	return Config.Section("bot_messages").Key(k).String()
 }
+
+func IsMulti() bool {
+	return Config.Section("").Key("multi_agents").MustBool(false)
+}
+
+func GetAgentName() string {
+	return Config.Section("").Key("agent_name").String()
+}
+
+// get enable_monitor

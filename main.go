@@ -29,7 +29,9 @@ func main() {
 
 	go monitor()
 	time.Sleep(3 * time.Second)
-	store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(store.GetIntlStrings("init_msg"), store.GetChannelID()))
+	store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(
+		prepareMessage(store.GetIntlStrings("init_msg")),
+		store.GetChannelID()))
 
 	for msg := range store.Rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
