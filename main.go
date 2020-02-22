@@ -20,16 +20,21 @@ func main() {
 	store.Config = cfg
 
 	slackClient := slack.New(store.GetSlackToken(), slack.OptionDebug(false))
-	rtm := slackClient.NewRTM()
-	go rtm.ManageConnection()
+	store.Rtm = slackClient.NewRTM()
+	go store.Rtm.ManageConnection()
 
+	if store.WatchEnabled() {
+		go watchFiles()
+	}
+
+	go monitor()
 	time.Sleep(3 * time.Second)
-	rtm.SendMessage(rtm.NewOutgoingMessage("I am online !", store.GetChannelID()))
+	store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(store.GetIntlStrings("init_msg"), store.GetChannelID()))
 
-	for msg := range rtm.IncomingEvents {
+	for msg := range store.Rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
-			go handleMessage(ev, rtm)
+			go handleMessage(ev)
 		}
 	}
 }
