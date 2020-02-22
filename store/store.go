@@ -36,3 +36,15 @@ func GetWatchFiles() []string {
 func GetIntlStrings(k string) string {
 	return Config.Section("bot_messages").Key(k).String()
 }
+
+func MonitorEnable() bool {
+	return Config.Section("monitor").Key("enable_monitor").MustBool(false)
+}
+
+func GetMonitorTime() int {
+	return Config.Section("monitor").Key("run_every_minutes").MustInt(30)
+}
+
+func IsOnlyOverhead() bool {
+	return Config.Section("").Key("alert_only_overhead").MustBool(false)
+}

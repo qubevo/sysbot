@@ -27,7 +27,10 @@ func main() {
 		go watchFiles()
 	}
 
-	go monitor()
+	if store.MonitorEnable() {
+		go monitor()
+	}
+
 	time.Sleep(3 * time.Second)
 	store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(store.GetIntlStrings("init_msg"), store.GetChannelID()))
 
