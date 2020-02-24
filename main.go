@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
+	"strings"
 
 	"github.com/qubevo/sysbot/store"
 
@@ -20,6 +20,12 @@ func main() {
 	store.Config = cfg
 
 	slackClient := slack.New(store.GetSlackToken(), slack.OptionDebug(false))
+
+	if store.BotID == "" {
+		resp, _ := slackClient.AuthTest()
+		user, _ := slackClient.GetUserInfo(resp.UserID)
+		store.BotID = user.ID
+	}
 	store.Rtm = slackClient.NewRTM()
 	go store.Rtm.ManageConnection()
 
@@ -31,13 +37,18 @@ func main() {
 		go monitor()
 	}
 
-	time.Sleep(3 * time.Second)
-	store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(store.GetIntlStrings("init_msg"), store.GetChannelID()))
+	// time.Sleep(3 * time.Second)
+	// store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(store.GetIntlStrings("init_msg"), store.GetChannelID()))
 
 	for msg := range store.Rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
-			go handleMessage(ev)
+			pref := "<@" + store.BotID + ">"
+			if strings.HasPrefix(ev.Msg.Text, pref) {
+				cleanMsg := strings.TrimPrefix(ev.Msg.Text, pref+" ")
+				ev.Msg.Text = cleanMsg
+				go handleMessage(ev)
+			}
 		}
 	}
 }

@@ -7,7 +7,9 @@ import (
 
 var Rtm *slack.RTM
 var Config *ini.File
-var BotEnable bool = false
+var BotEnable bool = true
+var ChannelID string = "*"
+var BotID string = ""
 
 func CmdsEnabled() bool {
 	return true
@@ -21,7 +23,10 @@ func GetSlackToken() string {
 	return Config.Section("").Key("slack_token").String()
 }
 
-func GetChannelID() string {
+func GetChannelID(c string) string {
+	if Config.Section("").Key("channel_id").String() == "*" {
+		return c
+	}
 	return Config.Section("").Key("channel_id").String()
 }
 
@@ -47,4 +52,14 @@ func GetMonitorTime() int {
 
 func IsOnlyOverhead() bool {
 	return Config.Section("").Key("alert_only_overhead").MustBool(false)
+}
+
+func FreeShell() bool {
+	return Config.Section("").Key("enable_free_shell_commands").MustBool(false)
+}
+
+func SaveChannel(c string) {
+	ChannelID = c
+	Config.Section("").Key("channel_id").SetValue(c)
+	Config.SaveTo("config.ini")
 }

@@ -3,6 +3,7 @@ module github.com/qubevo/sysbot
 go 1.13
 
 require (
+	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/hpcloud/tail v1.0.0
 	github.com/mackerelio/go-osstat v0.1.0
 	github.com/slack-go/slack v0.6.2
