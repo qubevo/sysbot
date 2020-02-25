@@ -23,36 +23,60 @@ func Shellout(command string) (string, string, error) {
 
 func handleMessage(ev *slack.MessageEvent) {
 	// fmt.Println(ev.Msg.Text)
+	if ev.Msg.Text == MSG_HELP {
+
+		help := "```" + `
+Commands:
+
+set channel - will set the channel(with user or slack channel) where sysbot can communicate.
+reset channel - will reset the channel, which allow sysbot to communicate with any channel and user.
+run <cmd label> - to run a predifined shell command or script
+exec <shell cmd> - will execute any shell command if the feature is enabled.(Can be enabled ONLY from config file)
+enable monitor - will enable sysbot to monitor system CPU, MEMORY and DISK. ** Works ONLY if a channel is set
+disable monitor - will disable sysbot system monitoring.
+
+More configurable features are vailable in the config file !
+- watch files
+- cron scripts and commands
+- configure, enable or disable remote commands
+- configure monitoring 
+and more...
+		` + "```"
+
+		store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(help, ev.Channel))
+
+		return
+	}
 	if (store.ChannelID != ev.Channel) && (store.ChannelID != "*") {
 		store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage("Sorry, I am not allowed to speak with you !", ev.Channel))
 		return
 	}
-	if ev.Msg.Text == "reset channel" {
+	if ev.Msg.Text == MSG_RESET_CHANNEL {
 		store.SaveChannel("*")
 		store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage("This channel was unset !", store.GetChannelID(ev.Channel)))
 		return
 	}
-	if ev.Msg.Text == "set channel" {
+	if ev.Msg.Text == MSG_SET_CHANNEL {
 		store.SaveChannel(ev.Channel)
 		store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage("Channel was saved !", store.GetChannelID(ev.Channel)))
 		return
 	}
-	if !store.BotEnable {
-		if ev.Msg.Text == "start" {
-			store.BotEnable = true
-			store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(store.GetIntlStrings("enabled_msg"), store.GetChannelID(ev.Channel)))
-		} else {
-			store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(store.GetIntlStrings("disabled_msg"), store.GetChannelID(ev.Channel)))
-		}
-		return
-	}
-	if ev.Msg.Text == "stop" {
-		store.BotEnable = false
-		store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(store.GetIntlStrings("disabled_msg"), store.GetChannelID(ev.Channel)))
-		return
-	}
-	if strings.HasPrefix(ev.Msg.Text, "run") {
-		result := strings.TrimPrefix(ev.Msg.Text, "run ")
+	// if !store.BotEnable {
+	// 	if ev.Msg.Text == MSG_START {
+	// 		store.BotEnable = true
+	// 		store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(store.GetIntlStrings("enabled_msg"), store.GetChannelID(ev.Channel)))
+	// 	} else {
+	// 		store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(store.GetIntlStrings("disabled_msg"), store.GetChannelID(ev.Channel)))
+	// 	}
+	// 	return
+	// }
+	// if ev.Msg.Text == MSG_STOP {
+	// 	store.BotEnable = false
+	// 	store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(store.GetIntlStrings("disabled_msg"), store.GetChannelID(ev.Channel)))
+	// 	return
+	// }
+	if strings.HasPrefix(ev.Msg.Text, MSG_RUN) {
+		result := strings.TrimPrefix(ev.Msg.Text, MSG_RUN+" ")
 		cmdFound := false
 		for _, d := range store.GetCmds() {
 			key, value := parseLine(d)
@@ -72,9 +96,9 @@ func handleMessage(ev *slack.MessageEvent) {
 		}
 		return
 	}
-	if strings.HasPrefix(ev.Msg.Text, "exec") {
+	if strings.HasPrefix(ev.Msg.Text, MSG_EXEC) {
 		if store.FreeShell() {
-			result := strings.TrimPrefix(ev.Msg.Text, "exec ")
+			result := strings.TrimPrefix(ev.Msg.Text, MSG_EXEC+" ")
 			out, _, _ := Shellout(result)
 			store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(
 				"```"+out+"```",
