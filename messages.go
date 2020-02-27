@@ -24,31 +24,12 @@ func Shellout(command string) (string, string, error) {
 func handleMessage(ev *slack.MessageEvent) {
 	// fmt.Println(ev.Msg.Text)
 	if ev.Msg.Text == MSG_HELP {
-
-		help := "```" + `
-Commands:
-
-set channel - will set the channel(with user or slack channel) where sysbot can communicate.
-reset channel - will reset the channel, which allow sysbot to communicate with any channel and user.
-run <cmd label> - to run a predifined shell command or script
-exec <shell cmd> - will execute any shell command if the feature is enabled.(Can be enabled ONLY from config file)
-enable monitor - will enable sysbot to monitor system CPU, MEMORY and DISK. ** Works ONLY if a channel is set
-disable monitor - will disable sysbot system monitoring.
-
-More configurable features are vailable in the config file !
-- watch files
-- cron scripts and commands
-- configure, enable or disable remote commands
-- configure monitoring 
-and more...
-		` + "```"
-
-		store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(help, ev.Channel))
-
+		store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(MSG_HELP_REPLY, ev.Channel))
 		return
 	}
 	if (store.ChannelID != ev.Channel) && (store.ChannelID != "*") {
 		store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage("Sorry, I am not allowed to speak with you !", ev.Channel))
+		// store.Rtm.PostMessage(ev.Channel, store.Rtm.MsgOptionCompose())
 		return
 	}
 	if ev.Msg.Text == MSG_RESET_CHANNEL {

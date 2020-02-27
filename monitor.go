@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"strconv"
 	"time"
 
-	"github.com/mackerelio/go-osstat/memory"
 	"github.com/qubevo/sysbot/store"
+	"github.com/shirou/gopsutil/mem"
 )
 
 func doEvery(d time.Duration, f func(time.Time)) {
@@ -18,18 +18,19 @@ func doEvery(d time.Duration, f func(time.Time)) {
 func run(t time.Time) {
 	if store.BotEnable {
 		// fmt.Printf("%v: Hello, World!\n", t)
-		memory, err := memory.Get()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
-			return
-		}
+		// memory, err := memory.Get()
+		// if err != nil {
+		// 	fmt.Fprintf(os.Stderr, "%s\n", err)
+		// 	return
+		// }
 		if store.ChannelID != "*" {
 			if !store.IsOnlyOverhead() {
+				v, _ := mem.VirtualMemory()
 				// fmt.Printf("memory total: %d bytes\n", memory.Total)
 				// fmt.Printf("memory used: %d bytes\n", memory.Used)
 				// fmt.Printf("memory cached: %d bytes\n", memory.Cached)
-				fmt.Printf("memory free: %d bytes\n", memory.Free)
-				store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage("mem", store.GetChannelID(store.ChannelID)))
+				fmt.Printf("memory free: %d bytes\n", v.UsedPercent)
+				store.Rtm.SendMessage(store.Rtm.NewOutgoingMessage(strconv.FormatUint(v.Free, 10), store.GetChannelID(store.ChannelID)))
 			} else {
 				//process overhead
 			}

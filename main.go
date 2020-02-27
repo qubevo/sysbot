@@ -19,6 +19,8 @@ func main() {
 	}
 	store.Config = cfg
 
+	store.ChannelID = store.GetChannelID(store.ChannelID)
+
 	slackClient := slack.New(store.GetSlackToken(), slack.OptionDebug(false))
 
 	if store.BotID == "" {
